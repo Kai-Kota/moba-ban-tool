@@ -32,6 +32,10 @@ export default defineConfig({
     },
   },
   build: {
+    // OBS 30 のブラウザソース/ドックは Chromium 103 ベース。
+    // 既定のままだと @media (max-width: ...) が範囲構文 (width<=...) に変換され、OBS で効かなくなる
+    target: "chrome100",
+    cssTarget: "chrome100",
     // Vite の既定の出力先 assets/ は Go 側の /assets/(data/ の画像)と衝突するため変える
     assetsDir: "static",
     rollupOptions: {

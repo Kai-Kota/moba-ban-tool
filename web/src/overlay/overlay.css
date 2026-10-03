@@ -1,5 +1,7 @@
 :root {
   --blue: #4fa3ff;
+  /* 点滅の色。OBS(Chromium 103)は color-mix() 非対応なので rgba(var(--pulse-rgb), a) で透明度を付ける */
+  --pulse-rgb: 79, 163, 255;
   --red: #ff5468;
   --gold: #c8aa6e;
   --gold-light: #f0e6d2;
@@ -230,7 +232,7 @@ body.preview .stage {
 }
 .side.red .pick.active,
 .side.red .ban.active {
-  --pulse: var(--red);
+  --pulse-rgb: 255, 84, 104;
 }
 .pick-turn {
   position: absolute;
@@ -452,12 +454,12 @@ body.preview .stage {
 }
 @keyframes slot-pulse {
   from {
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--pulse, var(--blue)) 40%, transparent);
+    box-shadow: inset 0 0 0 2px rgba(var(--pulse-rgb), 0.4);
   }
   to {
     box-shadow:
-      inset 0 0 0 3px var(--pulse, var(--blue)),
-      inset 0 0 30px color-mix(in srgb, var(--pulse, var(--blue)) 50%, transparent);
+      inset 0 0 0 3px rgb(var(--pulse-rgb)),
+      inset 0 0 30px rgba(var(--pulse-rgb), 0.5);
   }
 }
 @keyframes hover-blink {

@@ -11,6 +11,7 @@ import TeamEditor from "./TeamEditor";
 
 const ONE_CLICK_KEY = "control.oneClickConfirm";
 const ERROR_SHOW_MS = 4000;
+const NARROW_WIDTH = 1200; // control.css の @media (max-width: 1199px) と揃える
 
 function loadOneClick(): boolean {
   try {
@@ -37,6 +38,8 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [oneClick, setOneClick] = useState(loadOneClick);
   const [errorVisible, setErrorVisible] = useState(false);
+  // 狭い画面(OBS のドックなど)ではドラフト操作の場所を確保するため、フォームを最初は畳んでおく
+  const [editorsOpen, setEditorsOpen] = useState(() => window.innerWidth >= NARROW_WIDTH);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const slots = useMemo(() => slotIndexes(config?.draftOrder ?? []), [config]);
@@ -195,7 +198,13 @@ export default function App() {
         <DraftBoard side="red" state={state} order={config.draftOrder} slots={slots} chars={chars} />
       </main>
 
-      <section className="editors">
+      <details
+        className="editors-panel"
+        open={editorsOpen}
+        onToggle={(e) => setEditorsOpen(e.currentTarget.open)}
+      >
+        <summary>チーム情報・試合情報</summary>
+        <section className="editors">
         <TeamEditor
           key={`blue:${editorKey(state.blue)}`}
           side="blue"
@@ -217,7 +226,8 @@ export default function App() {
           onReloadLogos={reloadLogos}
           send={send}
         />
-      </section>
+        </section>
+      </details>
     </div>
   );
 }

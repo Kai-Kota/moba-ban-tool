@@ -482,3 +482,120 @@ h3 {
     visibility: hidden;
   }
 }
+
+/* ---------- チーム情報・試合情報(折りたたみ) ---------- */
+.editors-panel > summary {
+  cursor: pointer;
+  padding: 6px 4px;
+  color: var(--muted);
+  user-select: none;
+}
+.editors-panel[open] > summary {
+  margin-bottom: 8px;
+}
+.actions button,
+.topbar .conn {
+  white-space: nowrap;
+}
+
+/* ---------- 狭い画面(OBS のカスタムブラウザドックなど) ----------
+   App.tsx の NARROW_WIDTH と揃える */
+@media (max-width: 1199px) {
+  .control {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px;
+  }
+  .step-indicator {
+    flex: 1 1 260px;
+    gap: 10px;
+    padding: 4px 10px;
+  }
+  .step-now {
+    font-size: 18px;
+  }
+  .actions {
+    flex-wrap: wrap;
+    margin-left: 0;
+    gap: 6px;
+  }
+  .actions button {
+    padding: 4px 10px;
+  }
+
+  /* キャラ選択を一番上に、その下に両チームのボードを横並び */
+  .workspace {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .picker {
+    grid-column: 1 / -1;
+    order: -1;
+    padding: 8px;
+  }
+  .picker-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .search-input {
+    min-width: 0;
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+  .char-grid {
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 4px;
+    max-height: 45vh;
+  }
+  .char-name {
+    font-size: 11px;
+    padding: 2px;
+  }
+  .hint {
+    display: none;
+  }
+  .hover-line {
+    min-height: 0;
+  }
+
+  .board {
+    padding: 8px;
+    gap: 6px;
+    min-width: 0;
+  }
+  .board-head {
+    font-size: 14px;
+  }
+  .slot img,
+  .slot-empty {
+    width: 32px;
+    height: 32px;
+  }
+  .slot {
+    gap: 6px;
+    padding: 2px;
+  }
+  .slot-text {
+    font-size: 12px;
+  }
+
+  .editors {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+/* さらに狭いとき(ドックを縦長に置いた場合)はボードも縦に積む */
+@media (max-width: 480px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  .team-editor {
+    grid-template-columns: 1fr;
+  }
+}
