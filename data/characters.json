@@ -1,1 +1,102 @@
-[]
+[
+  {
+    "id": "aldric",
+    "name": "Aldric",
+    "image": "aldric.svg"
+  },
+  {
+    "id": "brynn",
+    "name": "Brynn",
+    "image": "brynn.svg"
+  },
+  {
+    "id": "cassia",
+    "name": "Cassia",
+    "image": "cassia.svg"
+  },
+  {
+    "id": "dorran",
+    "name": "Dorran",
+    "image": "dorran.svg"
+  },
+  {
+    "id": "elowen",
+    "name": "Elowen",
+    "image": "elowen.svg"
+  },
+  {
+    "id": "fenrik",
+    "name": "Fenrik",
+    "image": "fenrik.svg"
+  },
+  {
+    "id": "galen",
+    "name": "Galen",
+    "image": "galen.svg"
+  },
+  {
+    "id": "hesper",
+    "name": "Hesper",
+    "image": "hesper.svg"
+  },
+  {
+    "id": "isolde",
+    "name": "Isolde",
+    "image": "isolde.svg"
+  },
+  {
+    "id": "jarek",
+    "name": "Jarek",
+    "image": "jarek.svg"
+  },
+  {
+    "id": "kaida",
+    "name": "Kaida",
+    "image": "kaida.svg"
+  },
+  {
+    "id": "lucan",
+    "name": "Lucan",
+    "image": "lucan.svg"
+  },
+  {
+    "id": "mireille",
+    "name": "Mireille",
+    "image": "mireille.svg"
+  },
+  {
+    "id": "nox",
+    "name": "Nox",
+    "image": "nox.svg"
+  },
+  {
+    "id": "orrin",
+    "name": "Orrin",
+    "image": "orrin.svg"
+  },
+  {
+    "id": "petra",
+    "name": "Petra",
+    "image": "petra.svg"
+  },
+  {
+    "id": "quill",
+    "name": "Quill",
+    "image": "quill.svg"
+  },
+  {
+    "id": "rowan",
+    "name": "Rowan",
+    "image": "rowan.svg"
+  },
+  {
+    "id": "seraph",
+    "name": "Seraph",
+    "image": "seraph.svg"
+  },
+  {
+    "id": "talon",
+    "name": "Talon",
+    "image": "talon.svg"
+  }
+]

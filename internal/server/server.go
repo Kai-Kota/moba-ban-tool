@@ -14,12 +14,22 @@ import (
 //
 //	/ws          WebSocket(state の配信と操作の受付)
 //	/api/config  キャラ一覧とドラフト順
+//	/api/logos   data/logos/ の画像ファイル名一覧
 //	/assets/     data/ 以下の画像(images/, logos/)
 func New(cfg *config.Config, h *hub.Hub, dataDir string) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("GET /ws", h)
 	mux.HandleFunc("GET /api/config", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, cfg)
+	})
+	// ロゴは配信中に追加されることがあるので、毎回フォルダを読む
+	mux.HandleFunc("GET /api/logos", func(w http.ResponseWriter, r *http.Request) {
+		logos, err := config.Logos(dataDir)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		writeJSON(w, logos)
 	})
 	assets := http.FileServer(http.Dir(filepath.Clean(dataDir)))
 	mux.Handle("GET /assets/", http.StripPrefix("/assets/", noDirList(assets)))

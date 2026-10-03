@@ -23,7 +23,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	engine := draft.NewEngine(cfg.DraftOrder)
+	engine := draft.NewEngine(cfg.DraftOrder, cfg.CharacterIDs())
 
 	st := store.New(*statePath)
 	state, ok, err := st.Load()

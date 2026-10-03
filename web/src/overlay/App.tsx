@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useCharacterMap, useConfig } from "../shared/api";
 import type { Side } from "../shared/types";
 import { useDraftSocket } from "../shared/useDraftSocket";
 
@@ -22,6 +23,8 @@ function useFitScale(enabled: boolean): number {
 export default function App({ preview }: { preview: boolean }) {
   const { state, connected } = useDraftSocket();
   const scale = useFitScale(preview);
+  const chars = useCharacterMap(useConfig());
+  const name = (id: string) => (id ? (chars.get(id)?.name ?? id) : "-");
 
   const team = (side: Side) => {
     const t = state![side];
@@ -30,8 +33,8 @@ export default function App({ preview }: { preview: boolean }) {
         <h1>
           {t.teamName} ({t.seriesWins})
         </h1>
-        <p>BAN: {t.bans.map((b) => b || "-").join(" / ")}</p>
-        <p>PICK: {t.picks.map((p) => p || "-").join(" / ")}</p>
+        <p>BAN: {t.bans.map(name).join(" / ")}</p>
+        <p>PICK: {t.picks.map(name).join(" / ")}</p>
       </div>
     );
   };
@@ -46,7 +49,7 @@ export default function App({ preview }: { preview: boolean }) {
             <p>
               Step {state.currentStep + 1} / {state.phase}
             </p>
-            {state.hover && <p className="hover">選択中: {state.hover}</p>}
+            {state.hover && <p className="hover">選択中: {name(state.hover)}</p>}
           </div>
           {team("red")}
         </>

@@ -65,7 +65,10 @@ export interface Meta {
 export type Action =
   | { type: "hover"; charId: string }
   | { type: "confirm"; charId?: string }
+  | { type: "undo" }
   | { type: "reset" }
+  | { type: "nextGame" }
+  | { type: "swapSides" }
   | { type: "setTeamInfo"; team: Side; teamInfo: TeamInfo }
   | { type: "setMeta"; meta: Meta };
 

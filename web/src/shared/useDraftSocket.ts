@@ -4,10 +4,16 @@ import type { Action, DraftState, ServerMessage } from "./types";
 const MIN_RETRY_MS = 500;
 const MAX_RETRY_MS = 5000;
 
+// 同じ文言のエラーが続いても表示し直せるよう、発生時刻を持たせる
+export interface SocketError {
+  message: string;
+  at: number;
+}
+
 export interface DraftSocket {
   state: DraftState | null;
   connected: boolean;
-  lastError: string | null;
+  lastError: SocketError | null;
   send: (a: Action) => void;
 }
 
@@ -15,7 +21,7 @@ export interface DraftSocket {
 export function useDraftSocket(): DraftSocket {
   const [state, setState] = useState<DraftState | null>(null);
   const [connected, setConnected] = useState(false);
-  const [lastError, setLastError] = useState<string | null>(null);
+  const [lastError, setLastError] = useState<SocketError | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -36,9 +42,8 @@ export function useDraftSocket(): DraftSocket {
         const msg = JSON.parse(ev.data) as ServerMessage;
         if (msg.type === "state") {
           setState(msg.state);
-          setLastError(null);
         } else if (msg.type === "error") {
-          setLastError(msg.message);
+          setLastError({ message: msg.message, at: Date.now() });
         }
       };
       ws.onclose = () => {
@@ -61,7 +66,7 @@ export function useDraftSocket(): DraftSocket {
   const send = useCallback((a: Action) => {
     const ws = wsRef.current;
     if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(a));
-    else setLastError("サーバーに接続されていません");
+    else setLastError({ message: "サーバーに接続されていません", at: Date.now() });
   }, []);
 
   return { state, connected, lastError, send };

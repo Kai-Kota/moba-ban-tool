@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="hsl(324,70%,55%)"/>
+      <stop offset="1" stop-color="hsl(324,60%,18%)"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="640" fill="url(#g)"/>
+  <circle cx="180" cy="300" r="120" fill="hsl(324,70%,75%)" fill-opacity="0.25"/>
+  <text x="180" y="350" font-family="Segoe UI, sans-serif" font-size="160" font-weight="700"
+        fill="#fff" text-anchor="middle">S</text>
+  <text x="180" y="600" font-family="Segoe UI, sans-serif" font-size="40" font-weight="600"
+        fill="#fff" fill-opacity="0.8" text-anchor="middle">Seraph</text>
+</svg>

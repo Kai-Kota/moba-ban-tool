@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import type { Config } from "./types";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Character, Config } from "./types";
 
-export async function fetchConfig(): Promise<Config> {
-  const res = await fetch("/api/config");
-  if (!res.ok) throw new Error(`/api/config: ${res.status}`);
+async function getJSON<T>(url: string): Promise<T> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url}: ${res.status}`);
   return res.json();
 }
 
@@ -14,7 +14,7 @@ export function useConfig(): Config | null {
     let disposed = false;
     let timer: number | undefined;
     const load = () => {
-      fetchConfig()
+      getJSON<Config>("/api/config")
         .then((c) => !disposed && setConfig(c))
         .catch(() => {
           if (!disposed) timer = window.setTimeout(load, 2000);
@@ -28,3 +28,22 @@ export function useConfig(): Config | null {
   }, []);
   return config;
 }
+
+// data/logos/ のファイル一覧。配信中にロゴを追加できるよう再読込の関数も返す。
+export function useLogos(): [string[], () => void] {
+  const [logos, setLogos] = useState<string[]>([]);
+  const reload = useCallback(() => {
+    getJSON<string[]>("/api/logos").then(setLogos, () => {});
+  }, []);
+  useEffect(reload, [reload]);
+  return [logos, reload];
+}
+
+export function useCharacterMap(config: Config | null): Map<string, Character> {
+  return useMemo(() => new Map(config?.characters.map((c) => [c.id, c])), [config]);
+}
+
+export const characterImageUrl = (c: Character) =>
+  c.image ? `/assets/images/${encodeURI(c.image)}` : "";
+
+export const logoUrl = (file: string) => (file ? `/assets/logos/${encodeURI(file)}` : "");
