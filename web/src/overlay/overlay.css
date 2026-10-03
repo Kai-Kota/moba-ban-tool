@@ -5,7 +5,24 @@ body {
   overflow: hidden;
 }
 
+/* 通常のブラウザで確認するとき用。OBS では付かない */
+body.preview {
+  background: repeating-conic-gradient(#3a3d44 0% 25%, #2c2f35 0% 50%) 0 0 / 32px 32px;
+}
+body.preview .stage {
+  outline: 2px dashed #ffffff55;
+}
+.preview-status {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  font-size: 32px;
+  color: #ffcc66;
+}
+
 .stage {
+  position: relative;
+  transform-origin: top left;
   width: 1920px;
   height: 1080px;
   display: flex;
