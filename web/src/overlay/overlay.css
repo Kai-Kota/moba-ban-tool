@@ -1,3 +1,16 @@
+:root {
+  --blue: #4fa3ff;
+  --red: #ff5468;
+  --gold: #c8aa6e;
+  --gold-light: #f0e6d2;
+  --panel: #070b14;
+  --slot: #0e1626;
+  --muted: #8a93a6;
+  --side-w: 760px;
+  --panel-h: 400px;
+  --top-h: 84px;
+}
+
 html,
 body {
   margin: 0;
@@ -25,25 +38,441 @@ body.preview .stage {
   transform-origin: top left;
   width: 1920px;
   height: 1080px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: 40px;
-  box-sizing: border-box;
-  font-family: system-ui, sans-serif;
+  overflow: hidden;
+  font-family: "Bahnschrift", "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif;
   color: #fff;
-  text-shadow: 0 2px 4px #000;
 }
 
-.team.blue {
-  color: #8ec5ff;
+/* ---------- 下部パネル全体 ---------- */
+.draft {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--panel-h);
+  display: grid;
+  grid-template-columns: var(--side-w) 1fr var(--side-w);
+  background: linear-gradient(to top, #070b14f5, #0a1020e6);
+  border-top: 2px solid var(--gold);
 }
-.team.red {
-  color: #ff9a9a;
+
+.side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ---------- チーム名・コーチ・BAN ---------- */
+.side-top {
+  height: var(--top-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 14px;
+  box-sizing: border-box;
+}
+.side.red .side-top {
+  flex-direction: row-reverse;
+}
+
+.team-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.side.red .team-head {
+  flex-direction: row-reverse;
   text-align: right;
 }
+.team-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex: none;
+}
+.team-text {
+  min-width: 0;
+}
+.team-name {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.side.blue .team-name {
+  color: var(--blue);
+}
+.side.red .team-name {
+  color: var(--red);
+}
+.team-coach {
+  font-size: 15px;
+  color: var(--gold-light);
+  white-space: nowrap;
+}
+.team-coach span {
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  margin-right: 4px;
+}
 
-.center {
+.bans {
+  display: flex;
+  gap: 14px;
+  flex: none;
+}
+.side.red .bans {
+  flex-direction: row-reverse;
+}
+.ban-group {
+  display: flex;
+  gap: 6px;
+}
+.side.red .ban-group {
+  flex-direction: row-reverse;
+}
+
+.ban {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  overflow: hidden;
+  background: var(--slot);
+  border: 1px solid #ffffff22;
+  box-sizing: border-box;
+}
+.ban-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  filter: grayscale(1) brightness(0.5);
+}
+.ban-img.enter {
+  animation: ban-in 1s ease-out both;
+}
+.ban-strike {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top right,
+    transparent calc(50% - 2px),
+    #e84057 calc(50% - 2px),
+    #e84057 calc(50% + 2px),
+    transparent calc(50% + 2px)
+  );
+}
+.ban-strike.enter {
+  animation: strike 0.35s ease-out 0.45s both;
+}
+.ban.active {
+  animation: slot-pulse 0.8s ease-in-out infinite alternate;
+}
+
+/* ---------- ピック ---------- */
+.picks {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 0 2px;
+}
+
+.pick {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(to bottom, transparent 40%, #000a),
+    repeating-linear-gradient(135deg, #0e1626 0 12px, #101a2d 12px 24px);
+}
+.side.blue .pick.filled {
+  box-shadow: inset 0 3px 0 var(--blue);
+}
+.side.red .pick.filled {
+  box-shadow: inset 0 3px 0 var(--red);
+}
+.pick-art {
+  position: absolute;
+  inset: 0;
+}
+.pick-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+.pick-img.enter {
+  animation: pick-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.pick-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+.pick-flash.enter {
+  animation: flash 0.7s ease-out;
+}
+
+.pick.active {
+  animation: slot-pulse 0.8s ease-in-out infinite alternate;
+}
+.side.red .pick.active,
+.side.red .ban.active {
+  --pulse: var(--red);
+}
+.pick-turn {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  right: 0;
   text-align: center;
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  color: var(--gold-light);
+  animation: blink-soft 0.8s ease-in-out infinite alternate;
+}
+
+.pick-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 40px 10px 12px;
+  background: linear-gradient(to top, #000d, transparent);
+  text-align: center;
+}
+.pick-char {
+  min-height: 18px;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pick-player {
   font-size: 24px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 選択中(未確定)のキャラ。確定前なので薄く点滅させる */
+.pick-img.hovering,
+.ban-img.hovering {
+  filter: none;
+  animation: hover-blink 0.9s ease-in-out infinite alternate;
+}
+
+/* ---------- 中央 ---------- */
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 22px;
+  border-left: 1px solid #ffffff14;
+  border-right: 1px solid #ffffff14;
+  background: radial-gradient(ellipse at 50% 40%, #1a2440aa, transparent 70%);
+}
+
+.phase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--gold);
+  min-width: 260px;
+}
+.phase.blue {
+  border-bottom-color: var(--blue);
+}
+.phase.red {
+  border-bottom-color: var(--red);
+}
+.phase-text {
+  font-size: 22px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+.phase-turn {
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  max-width: 360px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.mark-logo {
+  width: 100px;
+  height: 100px;
+  display: grid;
+  place-items: center;
+}
+.mark-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.mark-initial {
+  width: 88px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 48px;
+  font-weight: 700;
+}
+.mark.blue .mark-initial {
+  background: #4fa3ff33;
+  color: var(--blue);
+}
+.mark.red .mark-initial {
+  background: #ff546833;
+  color: var(--red);
+}
+.pips {
+  display: flex;
+  gap: 6px;
+}
+.pip {
+  width: 22px;
+  height: 6px;
+  background: #ffffff26;
+}
+.mark.blue .pip.won {
+  background: var(--blue);
+}
+.mark.red .pip.won {
+  background: var(--red);
+}
+.score-nums {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1;
+}
+.score-blue {
+  color: var(--blue);
+}
+.score-red {
+  color: var(--red);
+}
+.score-sep {
+  color: var(--muted);
+  font-size: 40px;
+}
+
+.series {
+  display: flex;
+  gap: 10px;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  color: var(--gold-light);
+}
+.series .dot {
+  color: var(--gold);
+}
+
+/* ---------- アニメーション ---------- */
+@keyframes pick-in {
+  from {
+    transform: translateY(60px) scale(1.08);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes flash {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes ban-in {
+  0% {
+    transform: scale(1.6);
+    opacity: 0;
+    filter: none;
+  }
+  35% {
+    transform: scale(1);
+    opacity: 1;
+    filter: none;
+  }
+  60% {
+    filter: none;
+  }
+  100% {
+    filter: grayscale(1) brightness(0.5);
+  }
+}
+@keyframes strike {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes slot-pulse {
+  from {
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--pulse, var(--blue)) 40%, transparent);
+  }
+  to {
+    box-shadow:
+      inset 0 0 0 3px var(--pulse, var(--blue)),
+      inset 0 0 30px color-mix(in srgb, var(--pulse, var(--blue)) 50%, transparent);
+  }
+}
+@keyframes hover-blink {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 0.75;
+  }
+}
+@keyframes blink-soft {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
 }

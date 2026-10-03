@@ -67,7 +67,8 @@ func write(path, content string) {
 	}
 }
 
-// characterSVG は縦長の立ち絵風プレースホルダー。オーバーレイのピック枠は縦長、
+// characterSVG は縦長の立ち絵風プレースホルダー。名前はオーバーレイ側で表示するので画像には入れない。
+// オーバーレイのピック枠は縦長、
 // 操作パネルのグリッドは正方形なので、どちらで切り抜いても頭文字が中央に残る比率にする。
 func characterSVG(name string, hue int) string {
 	return fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640">
@@ -81,9 +82,8 @@ func characterSVG(name string, hue int) string {
   <circle cx="180" cy="300" r="120" fill="hsl(%[2]d,70%%,75%%)" fill-opacity="0.25"/>
   <text x="180" y="350" font-family="Segoe UI, sans-serif" font-size="160" font-weight="700"
         fill="#fff" text-anchor="middle">%[3]s</text>
-  <text x="180" y="600" font-family="Segoe UI, sans-serif" font-size="40" font-weight="600"
-        fill="#fff" fill-opacity="0.8" text-anchor="middle">%[1]s</text>
 </svg>
+<!-- %[1]s -->
 `, name, hue, name[:1])
 }
 
