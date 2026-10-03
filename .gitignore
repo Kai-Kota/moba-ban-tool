@@ -1,0 +1,6 @@
+/state.json
+/.state-*.json
+*.exe
+web/node_modules/
+web/dist/
+*.tsbuildinfo

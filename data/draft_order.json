@@ -1,0 +1,22 @@
+[
+  { "team": "blue", "type": "ban", "label": "Ban Phase 1" },
+  { "team": "red", "type": "ban", "label": "Ban Phase 1" },
+  { "team": "blue", "type": "ban", "label": "Ban Phase 1" },
+  { "team": "red", "type": "ban", "label": "Ban Phase 1" },
+  { "team": "blue", "type": "ban", "label": "Ban Phase 1" },
+  { "team": "red", "type": "ban", "label": "Ban Phase 1" },
+  { "team": "blue", "type": "pick", "label": "Pick Phase 1" },
+  { "team": "red", "type": "pick", "label": "Pick Phase 1" },
+  { "team": "red", "type": "pick", "label": "Pick Phase 1" },
+  { "team": "blue", "type": "pick", "label": "Pick Phase 1" },
+  { "team": "blue", "type": "pick", "label": "Pick Phase 1" },
+  { "team": "red", "type": "pick", "label": "Pick Phase 1" },
+  { "team": "red", "type": "ban", "label": "Ban Phase 2" },
+  { "team": "blue", "type": "ban", "label": "Ban Phase 2" },
+  { "team": "red", "type": "ban", "label": "Ban Phase 2" },
+  { "team": "blue", "type": "ban", "label": "Ban Phase 2" },
+  { "team": "red", "type": "pick", "label": "Pick Phase 2" },
+  { "team": "blue", "type": "pick", "label": "Pick Phase 2" },
+  { "team": "blue", "type": "pick", "label": "Pick Phase 2" },
+  { "team": "red", "type": "pick", "label": "Pick Phase 2" }
+]

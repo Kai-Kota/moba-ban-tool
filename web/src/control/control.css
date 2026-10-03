@@ -1,0 +1,55 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  background: #15171c;
+  color: #e8e8e8;
+}
+
+main {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.conn {
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.conn.ok {
+  background: #1f6f3f;
+}
+.conn.ng {
+  background: #8a2a2a;
+}
+
+.error {
+  color: #ff8080;
+}
+
+.teams {
+  display: flex;
+  gap: 16px;
+}
+
+.team {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+}
+.team.blue {
+  background: #1b2a44;
+}
+.team.red {
+  background: #441b1f;
+}
+
+input {
+  margin: 0 8px;
+}

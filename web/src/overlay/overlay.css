@@ -1,0 +1,32 @@
+html,
+body {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.stage {
+  width: 1920px;
+  height: 1080px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 40px;
+  box-sizing: border-box;
+  font-family: system-ui, sans-serif;
+  color: #fff;
+  text-shadow: 0 2px 4px #000;
+}
+
+.team.blue {
+  color: #8ec5ff;
+}
+.team.red {
+  color: #ff9a9a;
+  text-align: right;
+}
+
+.center {
+  text-align: center;
+  font-size: 24px;
+}
