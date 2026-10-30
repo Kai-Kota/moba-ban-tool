@@ -1,16 +1,18 @@
 :root {
-  --blue: #4fa3ff;
-  /* 点滅の色。OBS(Chromium 103)は color-mix() 非対応なので rgba(var(--pulse-rgb), a) で透明度を付ける */
-  --pulse-rgb: 79, 163, 255;
-  --red: #ff5468;
+  /* 陣営の色。今は両チームとも白(分けたいときはここを変える) */
+  --blue: #fff;
+  --blue-rgb: 255, 255, 255;
+  --red: #fff;
+  --red-rgb: 255, 255, 255;
   --gold: #c8aa6e;
   --gold-light: #f0e6d2;
-  --panel: #070b14;
-  --slot: #0e1626;
+  --slot: #0b0e15;
   --muted: #8a93a6;
-  --side-w: 760px;
-  --panel-h: 400px;
-  --top-h: 84px;
+  --center-w: 320px;
+  --board-h: 290px; /* ピック枠の段 */
+  --timer-h: 6px;
+  --ban-size: 70px;
+  --coach-h: 36px;
 }
 
 html,
@@ -45,109 +47,91 @@ body.preview .stage {
   color: #fff;
 }
 
-/* ---------- 下部パネル全体 ---------- */
+/* 陣営ごとの色。--team-rgb は rgba() で透明度を付けるため(OBS の Chromium 103 は color-mix() 非対応) */
+.blue {
+  --team: var(--blue);
+  --team-rgb: var(--blue-rgb);
+}
+.red {
+  --team: var(--red);
+  --team-rgb: var(--red-rgb);
+}
+
+/* ---------- 下部全体 ---------- */
 .draft {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: var(--panel-h);
-  display: grid;
-  grid-template-columns: var(--side-w) 1fr var(--side-w);
-  background: linear-gradient(to top, #070b14f5, #0a1020e6);
-  border-top: 2px solid var(--gold);
+  inset: 0;
 }
 
-.side {
+/* ---------- 画面端のコーチ名・BAN ---------- */
+.ban-row {
+  position: absolute;
+  bottom: calc(var(--board-h) + var(--timer-h) + 4px);
   display: flex;
   flex-direction: column;
-  min-width: 0;
+}
+.ban-row.blue {
+  left: 0;
+  align-items: flex-start;
+}
+.ban-row.red {
+  right: 0;
+  align-items: flex-end;
 }
 
-/* ---------- チーム名・コーチ・BAN ---------- */
-.side-top {
-  height: var(--top-h);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 0 14px;
-  box-sizing: border-box;
-}
-.side.red .side-top {
-  flex-direction: row-reverse;
-}
-
-.team-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-.side.red .team-head {
-  flex-direction: row-reverse;
-  text-align: right;
-}
-.team-logo {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-  flex: none;
-}
-.team-text {
-  min-width: 0;
-}
-.team-name {
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+.coach {
+  align-self: stretch;
+  height: var(--coach-h);
+  line-height: var(--coach-h);
+  padding: 0 16px;
+  background: #000000d9;
+  font-size: 24px;
+  font-weight: 600;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.side.blue .team-name {
-  color: var(--blue);
+.coach:empty {
+  visibility: hidden;
 }
-.side.red .team-name {
-  color: var(--red);
-}
-.team-coach {
-  font-size: 15px;
-  color: var(--gold-light);
-  white-space: nowrap;
-}
-.team-coach span {
-  color: var(--gold);
-  font-size: 12px;
-  letter-spacing: 0.15em;
-  margin-right: 4px;
+.ban-row.red .coach {
+  text-align: right;
 }
 
 .bans {
   display: flex;
-  gap: 14px;
-  flex: none;
+  gap: 10px;
 }
-.side.red .bans {
+.ban-row.red .bans {
   flex-direction: row-reverse;
 }
 .ban-group {
   display: flex;
-  gap: 6px;
+  gap: 2px;
 }
-.side.red .ban-group {
+.ban-row.red .ban-group {
   flex-direction: row-reverse;
 }
 
 .ban {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: var(--ban-size);
+  height: var(--ban-size);
   overflow: hidden;
+  /* 空き枠: チーム色に斜線 */
+  background:
+    linear-gradient(
+      to top right,
+      transparent calc(50% - 1px),
+      #00000080 calc(50% - 1px),
+      #00000080 calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ),
+    var(--team);
+}
+.ban.filled {
   background: var(--slot);
-  border: 1px solid #ffffff22;
-  box-sizing: border-box;
 }
 .ban-img {
   position: absolute;
@@ -156,7 +140,7 @@ body.preview .stage {
   height: 100%;
   object-fit: cover;
   object-position: center 30%;
-  filter: grayscale(1) brightness(0.5);
+  filter: grayscale(0.6) brightness(0.6);
 }
 .ban-img.enter {
   animation: ban-in 1s ease-out both;
@@ -166,40 +150,74 @@ body.preview .stage {
   inset: 0;
   background: linear-gradient(
     to top right,
-    transparent calc(50% - 2px),
-    #e84057 calc(50% - 2px),
-    #e84057 calc(50% + 2px),
-    transparent calc(50% + 2px)
+    transparent calc(50% - 1.5px),
+    #ffffffdd calc(50% - 1.5px),
+    #ffffffdd calc(50% + 1.5px),
+    transparent calc(50% + 1.5px)
   );
 }
 .ban-strike.enter {
   animation: strike 0.35s ease-out 0.45s both;
 }
 .ban.active {
+  background: rgba(var(--team-rgb), 0.35);
   animation: slot-pulse 0.8s ease-in-out infinite alternate;
 }
 
-/* ---------- ピック ---------- */
+/* ---------- タイマー(左右の端から中央へ縮む) ---------- */
+.timer {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: var(--board-h);
+  height: var(--timer-h);
+  background: #00000080;
+}
+.timer-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--team);
+  box-shadow: 0 0 12px rgba(var(--team-rgb), 0.8);
+  transform-origin: center;
+  animation-name: timer-shrink;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+/* ---------- ピック・中央の段 ---------- */
+.board {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--board-h);
+  display: grid;
+  grid-template-columns: 1fr var(--center-w) 1fr;
+  background: #05070bf2;
+}
+
 .picks {
-  flex: 1;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
-  padding: 0 2px;
+  min-width: 0;
 }
 
 .pick {
   position: relative;
   overflow: hidden;
-  background:
-    linear-gradient(to bottom, transparent 40%, #000a),
-    repeating-linear-gradient(135deg, #0e1626 0 12px, #101a2d 12px 24px);
+  border-right: 1px solid rgba(var(--team-rgb), 0.35);
+  background: linear-gradient(to top, rgba(var(--team-rgb), 0.12), transparent 60%), var(--slot);
 }
-.side.blue .pick.filled {
-  box-shadow: inset 0 3px 0 var(--blue);
+.pick:first-child {
+  border-left: 1px solid rgba(var(--team-rgb), 0.35);
 }
-.side.red .pick.filled {
-  box-shadow: inset 0 3px 0 var(--red);
+/* プレイヤー名を読みやすくするため左端を暗くする */
+.pick::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, #000000b3, transparent 45%);
+  pointer-events: none;
 }
 .pick-art {
   position: absolute;
@@ -228,17 +246,15 @@ body.preview .stage {
 }
 
 .pick.active {
+  background: linear-gradient(to top, rgba(var(--team-rgb), 0.35), rgba(var(--team-rgb), 0.06));
   animation: slot-pulse 0.8s ease-in-out infinite alternate;
-}
-.side.red .pick.active,
-.side.red .ban.active {
-  --pulse-rgb: 255, 84, 104;
 }
 .pick-turn {
   position: absolute;
   top: 14px;
   left: 0;
   right: 0;
+  z-index: 1;
   text-align: center;
   font-size: 15px;
   letter-spacing: 0.3em;
@@ -246,31 +262,23 @@ body.preview .stage {
   animation: blink-soft 0.8s ease-in-out infinite alternate;
 }
 
-.pick-info {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 40px 10px 12px;
-  background: linear-gradient(to top, #000d, transparent);
-  text-align: center;
-}
-.pick-char {
-  min-height: 18px;
-  font-size: 15px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--gold);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+/* 縦書きで左下から上へ */
 .pick-player {
-  font-size: 24px;
+  position: absolute;
+  left: 8px;
+  bottom: 14px;
+  z-index: 1;
+  max-height: calc(var(--board-h) - 28px);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 30px;
   font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 0 6px #000;
 }
 
 /* 選択中(未確定)のキャラ。確定前なので薄く点滅させる */
@@ -286,57 +294,50 @@ body.preview .stage {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 0 22px;
-  border-left: 1px solid #ffffff14;
-  border-right: 1px solid #ffffff14;
-  background: radial-gradient(ellipse at 50% 40%, #1a2440aa, transparent 70%);
+  padding: 14px 0 16px;
+  background: #000;
+  min-width: 0;
 }
 
-.phase {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding-bottom: 8px;
-  border-bottom: 3px solid var(--gold);
-  min-width: 260px;
-}
-.phase.blue {
-  border-bottom-color: var(--blue);
-}
-.phase.red {
-  border-bottom-color: var(--red);
-}
 .phase-text {
-  font-size: 22px;
+  font-size: 18px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--gold-light);
-}
-.phase-turn {
-  font-size: 15px;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  max-width: 360px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .score {
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: center;
+  width: 100%;
 }
 .mark {
+  width: 130px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+.pips {
+  display: flex;
+  gap: 8px;
+  height: 18px;
+}
+.pip {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #ffffffcc;
+}
+.pip.won {
+  background: var(--team);
+  border-color: var(--team);
+  box-shadow: 0 0 8px rgba(var(--team-rgb), 0.8);
 }
 .mark-logo {
-  width: 100px;
-  height: 100px;
+  width: 96px;
+  height: 96px;
   display: grid;
   place-items: center;
 }
@@ -346,61 +347,58 @@ body.preview .stage {
   object-fit: contain;
 }
 .mark-initial {
-  width: 88px;
-  height: 88px;
+  width: 84px;
+  height: 84px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  font-size: 48px;
+  font-size: 46px;
   font-weight: 700;
+  background: rgba(var(--team-rgb), 0.2);
+  color: var(--team);
 }
-.mark.blue .mark-initial {
-  background: #4fa3ff33;
-  color: var(--blue);
-}
-.mark.red .mark-initial {
-  background: #ff546833;
-  color: var(--red);
-}
-.pips {
-  display: flex;
-  gap: 6px;
-}
-.pip {
-  width: 22px;
-  height: 6px;
-  background: #ffffff26;
-}
-.mark.blue .pip.won {
-  background: var(--blue);
-}
-.mark.red .pip.won {
-  background: var(--red);
-}
-.score-nums {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 64px;
+.mark-name {
+  max-width: 100%;
+  font-size: 34px;
   font-weight: 700;
   line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.score-blue {
-  color: var(--blue);
+
+/* 手番のチームを指す矢印 */
+.turn-mark {
+  width: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  letter-spacing: 0.1em;
 }
-.score-red {
-  color: var(--red);
+.turn-arrow {
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
 }
-.score-sep {
-  color: var(--muted);
-  font-size: 40px;
+.turn-mark {
+  color: var(--team);
+}
+.turn-mark.blue .turn-arrow {
+  border-right: 14px solid var(--team);
+}
+.turn-mark.red .turn-arrow {
+  border-left: 14px solid var(--team);
 }
 
 .series {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   font-size: 16px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: var(--gold-light);
 }
 .series .dot {
@@ -408,6 +406,14 @@ body.preview .stage {
 }
 
 /* ---------- アニメーション ---------- */
+@keyframes timer-shrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
 @keyframes pick-in {
   from {
     transform: translateY(60px) scale(1.08);
@@ -441,7 +447,7 @@ body.preview .stage {
     filter: none;
   }
   100% {
-    filter: grayscale(1) brightness(0.5);
+    filter: grayscale(0.6) brightness(0.6);
   }
 }
 @keyframes strike {
@@ -454,12 +460,12 @@ body.preview .stage {
 }
 @keyframes slot-pulse {
   from {
-    box-shadow: inset 0 0 0 2px rgba(var(--pulse-rgb), 0.4);
+    box-shadow: inset 0 0 0 2px rgba(var(--team-rgb), 0.4);
   }
   to {
     box-shadow:
-      inset 0 0 0 3px rgb(var(--pulse-rgb)),
-      inset 0 0 30px rgba(var(--pulse-rgb), 0.5);
+      inset 0 0 0 3px rgb(var(--team-rgb)),
+      inset 0 0 30px rgba(var(--team-rgb), 0.5);
   }
 }
 @keyframes hover-blink {

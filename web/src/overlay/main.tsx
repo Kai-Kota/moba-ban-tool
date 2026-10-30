@@ -10,8 +10,12 @@ const param = new URLSearchParams(location.search).get("preview");
 const preview = param !== null ? param !== "0" : !("obsstudio" in window);
 if (preview) document.body.classList.add("preview");
 
+// 手番ごとのタイマーの秒数(既定30秒)。?timer=0 で非表示
+const timerParam = Number(new URLSearchParams(location.search).get("timer") ?? "30");
+const timerSec = Number.isFinite(timerParam) && timerParam > 0 ? timerParam : 0;
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App preview={preview} />
+    <App preview={preview} timerSec={timerSec} />
   </StrictMode>,
 );
