@@ -1,7 +1,7 @@
 import { logoUrl } from "../shared/api";
 import type { DraftState, Side, Step } from "../shared/types";
 
-// 中央: フェーズ表示、両チームのロゴとシリーズスコア、BO表記、パッチ。
+// 中央: フェーズ表示、両チームの勝利数(丸)・ロゴ・チーム名、パッチとBO表記。
 export default function CenterPanel({ state, order }: { state: DraftState; order: Step[] }) {
   const step = state.phase === "drafting" ? order[state.currentStep] : undefined;
   const phaseText = step
@@ -11,21 +11,13 @@ export default function CenterPanel({ state, order }: { state: DraftState; order
 
   return (
     <div className="center">
-      <div className={`phase ${step?.team ?? "done"}`}>
-        <span className="phase-text">{phaseText}</span>
-        {step && (
-          <span className="phase-turn">
-            {state[step.team].teamName} {step.type === "ban" ? "BAN" : "PICK"}
-          </span>
-        )}
-      </div>
+      <div className="phase-text">{phaseText}</div>
 
       <div className="score">
         <TeamMark side="blue" state={state} />
-        <div className="score-nums">
-          <span className="score-blue">{state.blue.seriesWins}</span>
-          <span className="score-sep">-</span>
-          <span className="score-red">{state.red.seriesWins}</span>
+        <div className={`turn-mark ${step?.team ?? "done"}`}>
+          <span className="turn-arrow" />
+          <span className="turn-type">{step ? step.type.toUpperCase() : ""}</span>
         </div>
         <TeamMark side="red" state={state} />
       </div>
@@ -50,6 +42,12 @@ function TeamMark({ side, state }: { side: Side; state: DraftState }) {
   const winsNeeded = Math.floor(state.bestOf / 2) + 1;
   return (
     <div className={`mark ${side}`}>
+      <div className="pips">
+        {state.bestOf > 1 &&
+          Array.from({ length: winsNeeded }, (_, i) => (
+            <span key={i} className={i < t.seriesWins ? "pip won" : "pip"} />
+          ))}
+      </div>
       <div className="mark-logo">
         {t.logo ? (
           <img src={logoUrl(t.logo)} alt="" />
@@ -57,13 +55,7 @@ function TeamMark({ side, state }: { side: Side; state: DraftState }) {
           <span className="mark-initial">{t.teamName.slice(0, 1)}</span>
         )}
       </div>
-      {state.bestOf > 1 && (
-        <div className="pips">
-          {Array.from({ length: winsNeeded }, (_, i) => (
-            <span key={i} className={i < t.seriesWins ? "pip won" : "pip"} />
-          ))}
-        </div>
-      )}
+      <div className="mark-name">{t.teamName}</div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { characterImageUrl, logoUrl, useCharacterMap, useConfig } from "../shared/api";
+import { characterImageUrl, useCharacterMap, useConfig } from "../shared/api";
 import { activeSlot, banGroups, slotIndexes, type ActiveSlot } from "../shared/draft";
 import type { Character, DraftState, Side, Step } from "../shared/types";
 import { useDraftSocket } from "../shared/useDraftSocket";
@@ -23,7 +23,7 @@ function useFitScale(enabled: boolean): number {
   return enabled ? scale : 1;
 }
 
-export default function App({ preview }: { preview: boolean }) {
+export default function App({ preview, timerSec }: { preview: boolean; timerSec: number }) {
   const { state, connected } = useDraftSocket();
   const config = useConfig();
   const chars = useCharacterMap(config);
@@ -43,76 +43,94 @@ export default function App({ preview }: { preview: boolean }) {
     if (ready) enableAnimationsSoon();
   }, [ready]);
 
+  const active = state && order ? activeSlot(state, order, slots) : null;
+
   return (
     <div className="stage" style={{ transform: `scale(${scale})` }}>
       {preview && !connected && <div className="preview-status">サーバー接続待ち...</div>}
       {state && order && (
         <div className="draft">
-          <TeamSide side="blue" state={state} order={order} slots={slots} chars={chars} />
-          <CenterPanel state={state} order={order} />
-          <TeamSide side="red" state={state} order={order} slots={slots} chars={chars} />
+          <BanRow side="blue" state={state} order={order} active={active} chars={chars} />
+          <BanRow side="red" state={state} order={order} active={active} chars={chars} />
+          {timerSec > 0 && <Timer state={state} active={active} seconds={timerSec} />}
+          <div className="board">
+            <Picks side="blue" state={state} active={active} chars={chars} />
+            <CenterPanel state={state} order={order} />
+            <Picks side="red" state={state} active={active} chars={chars} />
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-interface TeamSideProps {
+interface SideProps {
   side: Side;
   state: DraftState;
-  order: Step[];
-  slots: number[];
+  active: ActiveSlot | null;
   chars: Map<string, Character>;
 }
 
-function TeamSide({ side, state, order, slots, chars }: TeamSideProps) {
+const isActiveSlot = (active: ActiveSlot | null, side: Side, type: "ban" | "pick", i: number) =>
+  active?.team === side && active.type === type && active.index === i;
+
+// 画面端に寄せたコーチ名とBAN枠
+function BanRow({ side, state, order, active, chars }: SideProps & { order: Step[] }) {
   const team = state[side];
-  const active: ActiveSlot | null = activeSlot(state, order, slots);
-  const isActive = (type: "ban" | "pick", i: number) =>
-    active?.team === side && active.type === type && active.index === i;
   const hover = chars.get(state.hover);
   const groups = useMemo(() => banGroups(order, side), [order, side]);
 
   return (
-    <div className={`side ${side}${active?.team === side ? " turn" : ""}`}>
-      <div className="side-top">
-        <div className="team-head">
-          {team.logo && <img className="team-logo" src={logoUrl(team.logo)} alt="" />}
-          <div className="team-text">
-            <div className="team-name">{team.teamName}</div>
-            {team.coach && (
-              <div className="team-coach">
-                <span>COACH</span> {team.coach}
-              </div>
-            )}
+    <div className={`ban-row ${side}`}>
+      <div className="coach">{team.coach && <>COACH: {team.coach}</>}</div>
+      <div className="bans">
+        {groups.map((g, gi) => (
+          <div className="ban-group" key={gi}>
+            {g.map((i) => (
+              <BanSlot
+                key={i}
+                char={chars.get(team.bans[i])}
+                hover={hover}
+                active={isActiveSlot(active, side, "ban", i)}
+              />
+            ))}
           </div>
-        </div>
-        <div className="bans">
-          {groups.map((g, gi) => (
-            <div className="ban-group" key={gi}>
-              {g.map((i) => (
-                <BanSlot
-                  key={i}
-                  char={chars.get(team.bans[i])}
-                  hover={hover}
-                  active={isActive("ban", i)}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="picks">
-        {team.picks.map((id, i) => (
-          <PickSlot
-            key={i}
-            char={chars.get(id)}
-            hover={hover}
-            active={isActive("pick", i)}
-            player={team.players[i] ?? ""}
-          />
         ))}
       </div>
+    </div>
+  );
+}
+
+function Picks({ side, state, active, chars }: SideProps) {
+  const team = state[side];
+  const hover = chars.get(state.hover);
+  return (
+    <div className={`picks ${side}`}>
+      {team.picks.map((id, i) => (
+        <PickSlot
+          key={i}
+          char={chars.get(id)}
+          hover={hover}
+          active={isActiveSlot(active, side, "pick", i)}
+          player={team.players[i] ?? ""}
+        />
+      ))}
+    </div>
+  );
+}
+
+// BAN枠とピック枠の間の横線。手番が変わるたびに満タンから始まり、左右の端から中央へ縮む。
+// サーバーは時間を持たないので、表示上の目安(手番の切り替わりから数えた秒数)。
+function Timer({ state, active, seconds }: { state: DraftState; active: ActiveSlot | null; seconds: number }) {
+  return (
+    <div className="timer">
+      {active && (
+        <div
+          key={state.currentStep}
+          className={`timer-fill ${active.team}`}
+          style={{ animationDuration: `${seconds}s` }}
+        />
+      )}
     </div>
   );
 }
