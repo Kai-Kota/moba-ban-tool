@@ -61,7 +61,7 @@ jobs:
           GOOS: windows
           GOARCH: amd64
           CGO_ENABLED: "0"
-        run: go build -tags embed -trimpath -ldflags "-s -w" -o moba-ban-tool.exe ./cmd/draftserver
+        run: go build -tags embed -trimpath -ldflags "-s -w -H windowsgui" -o moba-ban-tool.exe ./cmd/draftserver
       - uses: actions/upload-artifact@v4
         with:
           name: moba-ban-tool-exe
