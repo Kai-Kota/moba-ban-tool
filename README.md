@@ -1,11 +1,40 @@
 # moba-ban-tool
 
+[![CI](https://github.com/Kai-Kota/moba-ban-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/Kai-Kota/moba-ban-tool/actions/workflows/ci.yml)
+![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 MOBA の BAN/PICK を OBS の配信画面に重ねて表示するオーバーレイツールです。
 ゲームの API は使わず、オペレーターが操作パネルから手動で入力します。
+
+![配信画面に表示されるオーバーレイ](docs/images/overlay.png)
+
+<sub>配信画面(1920x1080)に重ねて表示されるオーバーレイ。背景は透過で、ゲーム画面の上に BAN/PICK のパネルだけが映ります。画像はダミーデータです。</sub>
 
 - キャラ一覧とドラフト順は JSON と画像で差し替えられるので、タイトルを問わず使えます
 - サーバーは Windows 用の単一 exe(フロントエンドを埋め込み済み)です
 - 操作パネルとオーバーレイは WebSocket で同期し、状態は `state.json` に保存されるので、再起動しても続きから再開できます
+
+## 技術スタック
+
+| 領域 | 使用技術 |
+|---|---|
+| サーバー | Go 1.25(標準の `net/http`、[coder/websocket](https://github.com/coder/websocket)) |
+| フロントエンド | React 19 + TypeScript、Vite |
+| デスクトップ | Microsoft Edge WebView2([go-webview2](https://github.com/jchv/go-webview2)) |
+| 配布 | `go:embed` でフロントエンドを埋め込んだ単一 exe |
+| CI | GitHub Actions(gofmt / go vet / go test、型チェックとビルド、Windows exe のビルド) |
+
+## 設計で工夫した点
+
+- **状態はサーバーだけが持つ**: ドラフトの状態はサーバー側の1か所だけにあり、操作パネルは「操作」を送るだけです。サーバーが検証して状態を更新し、全クライアントへ配信します。操作パネルとオーバーレイの表示が食い違うことはありません
+- **ルールをテストできる形に分離**: BAN/PICK・Undo・次の試合などの更新ルールは `internal/draft` に閉じ込め、HTTP や WebSocket に依存しない純粋なロジックとしてテストしています
+- **配信中に止まらない**: 状態は一時ファイルに書いてからリネームする方法で保存しています。保存中に落ちてもファイルが壊れず、再起動すれば続きから再開できます。オーバーレイは、サーバーが再起動しても自動で再接続します
+- **タイトルを問わず使える**: キャラ一覧とドラフト順を JSON で外から与える設計です。起動時に設定を検証し、ID の重複やピック数の超過などは分かりやすいエラーで知らせます
+- **配信者が導入しやすい**: Node.js などを入れなくても、exe をダブルクリックするだけで動きます。操作パネルは専用ウィンドウで開き、WebView2 がない環境ではブラウザ表示に自動で切り替わります
+- **OBS の制約に合わせたビルド**: OBS のブラウザソースは古い Chromium ベースのため、Vite のビルドターゲットを合わせ、CSS がそのまま効くようにしています
 
 ---
 
@@ -26,14 +55,15 @@ moba-ban-tool\
 └─ README.md
 ```
 
-`moba-ban-tool.exe` をダブルクリックすると、コンソールウィンドウが開き、ブラウザで操作パネルが開きます。
+`moba-ban-tool.exe` をダブルクリックすると、操作パネルが専用のウィンドウで開きます(ブラウザは使いません)。
+OBS に読み込む URL はウィンドウのタイトルバーにも表示されます。
 
 ```
-  操作パネル  http://127.0.0.1:8080/control
   OBS 用      http://127.0.0.1:8080/overlay   (ブラウザソース 1920x1080)
 ```
 
-- 終了するときはコンソールウィンドウを閉じます
+- 終了するときは操作パネルのウィンドウを閉じます。ドラフトの状態は操作のたびに保存されているので、次回は続きから再開できます
+- 専用ウィンドウには Microsoft Edge WebView2 ランタイムを使います。Windows 10/11 には通常インストール済みです。ない場合は自動でブラウザ表示に切り替わり、コンソールウィンドウに URL が表示されます(コンソールを閉じると終了)
 - 初回起動時に Windows Defender SmartScreen の警告が出ることがあります。「詳細情報」→「実行」で起動できます
 - ファイアウォールの許可を求められた場合、同じ PC だけで使うなら許可しなくても動きます
 
@@ -59,7 +89,7 @@ moba-ban-tool\
 
 ### 操作パネルを OBS の中に置く(カスタムブラウザドック)
 
-ブラウザを別に開かず、OBS のウィンドウ内で操作できます。
+専用ウィンドウの代わりに、OBS のウィンドウ内で操作することもできます(exe は起動しておく必要があります)。
 
 1. メニュー「ドック」→「カスタムブラウザドック」
 2. ドック名に `Draft Control`、URL に `http://127.0.0.1:8080/control` を入れて「適用」
@@ -181,7 +211,8 @@ moba-ban-tool.exe -addr 0.0.0.0:8080 -data D:\overlay\data
 | `-addr` | `127.0.0.1:8080` | 待ち受けアドレス |
 | `-data` | カレントの `data`、なければ exe の隣の `data` | 設定と画像のフォルダ |
 | `-state` | `data` フォルダと同じ場所の `state.json` | 状態の保存先 |
-| `-open` | `true` | 起動時にブラウザで操作パネルを開く。`-open=false` で無効 |
+| `-window` | `true` | 操作パネルを専用ウィンドウで開く。`-window=false` にすると従来どおりコンソール + ブラウザで起動する(OBS ドックだけで操作する場合など) |
+| `-open` | `true` | `-window=false` のとき、起動時にブラウザで操作パネルを開く。`-open=false` で無効 |
 
 ### 別の PC から操作する
 
@@ -199,7 +230,10 @@ Windows ファイアウォールでの許可が必要です。同じネットワ
 
 ### 開発サーバー
 
-ターミナルを2つ使います。どちらもリポジトリのルートで実行します。
+Windows では、リポジトリのルートの `dev.cmd` をダブルクリックすると、Go サーバーと Vite の dev server を1つのウィンドウでまとめて起動し、操作パネルを開きます。
+初回は `npm ci` も実行します。ウィンドウを閉じるか Ctrl+C で両方とも止まります。
+
+手動で起動する場合はターミナルを2つ使います。どちらもリポジトリのルートで実行します。
 
 ```
 go run ./cmd/draftserver

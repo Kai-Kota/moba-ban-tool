@@ -27,7 +27,8 @@ func main() {
 	addr := flag.String("addr", "127.0.0.1:8080", "待ち受けアドレス(別PCから操作する場合は 0.0.0.0:8080)")
 	dataFlag := flag.String("data", "", "characters.json などを置くディレクトリ(既定: カレントか exe の隣の data)")
 	stateFlag := flag.String("state", "", "状態の保存先(既定: data ディレクトリと同じ場所の state.json)")
-	open := flag.Bool("open", true, "起動時にブラウザで操作パネルを開く(配布用ビルドのみ)")
+	window := flag.Bool("window", true, "操作パネルを専用ウィンドウで開く(配布用ビルドのみ。false にするとサーバーだけ起動してブラウザで開く)")
+	open := flag.Bool("open", true, "-window=false のとき、起動時にブラウザで操作パネルを開く")
 	flag.Parse()
 
 	ui := web.Dist()
@@ -70,24 +71,54 @@ func main() {
 	}
 
 	h := hub.New(engine, state, st.Save)
+	srv := server.New(cfg, h, dataDir, ui)
 	base := "http://" + displayHost(ln.Addr().(*net.TCPAddr))
 	log.Printf("データ: %s", dataDir)
 	log.Printf("状態の保存先: %s", statePath)
-	if ui == nil {
+	if !embedded {
 		log.Printf("開発用ビルドです。フロントは npm --prefix web run dev で起動してください")
-	} else {
-		fmt.Println()
-		fmt.Println("  操作パネル  " + base + "/control")
-		fmt.Println("  OBS 用      " + base + "/overlay   (ブラウザソース 1920x1080)")
-		fmt.Println()
-		fmt.Println("  終了するにはこのウィンドウを閉じるか Ctrl+C を押してください")
-		fmt.Println()
+		fatal(false, http.Serve(ln, srv))
+	}
+
+	if *window {
+		go func() { fatal(true, http.Serve(ln, srv)) }()
+		title := appTitle + "    OBS 用: " + base + "/overlay"
+		err := runWindow(base+"/control", title)
+		if err == nil {
+			// ウィンドウを閉じたら終了する。状態は操作のたびに保存済み。
+			os.Exit(0)
+		}
+		// ウィンドウを開けなかったときは、従来どおりコンソール + ブラウザで続ける
+		ensureConsole()
+		log.Printf("専用ウィンドウを開けないため、ブラウザで開きます: %v", err)
+		printURLs(base)
 		if *open {
 			openBrowser(base + "/control")
 		}
+		select {}
 	}
-	fatal(embedded, http.Serve(ln, server.New(cfg, h, dataDir, ui)))
+
+	ensureConsole()
+	printURLs(base)
+	if *open {
+		openBrowser(base + "/control")
+	}
+	fatal(true, http.Serve(ln, srv))
 }
+
+const appTitle = "MOBA BAN/PICK 操作パネル"
+
+func printURLs(base string) {
+	fmt.Println()
+	fmt.Println("  操作パネル  " + base + "/control")
+	fmt.Println("  OBS 用      " + base + "/overlay   (ブラウザソース 1920x1080)")
+	fmt.Println()
+	fmt.Println("  終了するにはこのウィンドウを閉じるか Ctrl+C を押してください")
+	fmt.Println()
+}
+
+// redirectLog は標準エラー出力を差し替えた後に log の出力先を合わせる。
+func redirectLog() { log.SetOutput(os.Stderr) }
 
 // resolveDataDir は data ディレクトリを探す。
 // exe をダブルクリックした場合とターミナルから起動した場合で
@@ -138,9 +169,14 @@ func openBrowser(url string) {
 }
 
 // fatal はエラーを表示して終了する。
-// 配布用ビルドは exe をダブルクリックして使うため、すぐにウィンドウが閉じてエラーが読めないことがないよう Enter を待つ。
+// 配布用ビルドはコンソールなしの exe なので、コンソールがなければメッセージボックスで出す。
+// コンソールがある場合は、すぐにウィンドウが閉じてエラーが読めないことがないよう Enter を待つ。
 func fatal(waitEnter bool, err error) {
 	log.Print("エラー: ", err)
+	if !hasConsole() {
+		showError("エラー: " + err.Error())
+		os.Exit(1)
+	}
 	if waitEnter {
 		fmt.Print("\nEnter キーで終了します...")
 		bufio.NewReader(os.Stdin).ReadString('\n')

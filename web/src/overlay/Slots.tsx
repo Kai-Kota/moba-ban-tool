@@ -8,9 +8,9 @@ interface SlotProps {
 }
 
 // ピック枠(縦長カード)。確定時はスライドイン+フラッシュ、選択中は点滅で薄く表示する。
+// プレイヤー名は左下に縦書き(下から上へ読む向き)で出す。
 export function PickSlot({ char, hover, active, player }: SlotProps & { player: string }) {
   const cls = ["pick", active && "active", char && "filled"].filter(Boolean).join(" ");
-  const shown = char ?? (active ? hover : undefined);
   return (
     <div className={cls}>
       <div className="pick-art">
@@ -21,15 +21,12 @@ export function PickSlot({ char, hover, active, player }: SlotProps & { player: 
         {char && <EnterFx key={`f:${char.id}`} className="pick-flash" />}
       </div>
       {active && !char && <div className="pick-turn">PICKING</div>}
-      <div className="pick-info">
-        <div className="pick-char">{shown?.name ?? ""}</div>
-        <div className="pick-player">{player}</div>
-      </div>
+      <div className="pick-player">{player}</div>
     </div>
   );
 }
 
-// BAN枠(正方形)。確定時はカラーで出てからグレーアウトし、斜線が引かれる。
+// BAN枠(正方形)。空き枠はチーム色に斜線、確定時はカラーで出てから暗くなり、斜線が引かれる。
 export function BanSlot({ char, hover, active }: SlotProps) {
   const cls = ["ban", active && "active", char && "filled"].filter(Boolean).join(" ");
   return (

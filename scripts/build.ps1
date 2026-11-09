@@ -24,7 +24,7 @@ Push-Location $root
 try {
     $running = Get-Process moba-ban-tool -ErrorAction SilentlyContinue |
         Where-Object { $_.Path -eq (Join-Path $out $exeName) }
-    if ($running) { throw "$out の exe が起動中です。コンソールウィンドウを閉じてから実行してください" }
+    if ($running) { throw "$out の exe が起動中です。操作パネルのウィンドウを閉じてから実行してください" }
 
     Write-Host "==> フロントエンドをビルド" -ForegroundColor Cyan
     if (-not (Test-Path "web\node_modules")) {
@@ -45,7 +45,7 @@ try {
     $env:GOOS = "windows"
     $env:GOARCH = "amd64"
     $env:CGO_ENABLED = "0"
-    go build -tags embed -trimpath -ldflags "-s -w" -o (Join-Path $stage $exeName) ./cmd/draftserver
+    go build -tags embed -trimpath -ldflags "-s -w -H windowsgui" -o (Join-Path $stage $exeName) ./cmd/draftserver
     if ($LASTEXITCODE -ne 0) { throw "go build に失敗しました" }
     Copy-Item -Recurse "data" (Join-Path $stage "data")
     Copy-Item "README.md" $stage
